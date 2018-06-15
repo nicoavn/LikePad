@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
 
-# Create your views here.
+from datetime import datetime as dt
+
 from Like.models import Like
 from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeException
 
@@ -9,8 +10,23 @@ from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeExceptio
 def home(request):
     users = User.objects.all()
 
+    now = dt.now()
+    datetime_day_start = dt(now.year, now.month, now.day)
+    datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
+    day_liked_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end)
+                                                      ).values_list('reported_to_id', flat=True)
+
+    liked_users = []
+    for user in users:
+        if user == request.user:
+            continue
+
+        if user.id in day_liked_users:
+            liked_users.append(user.id)
+
     context = {
-        'users': users
+        'users': users,
+        'liked_users': liked_users,
     }
 
     return render(request, "dashboard.html", context)
@@ -31,13 +47,28 @@ def like(request):
     except DailyVotesAlreadyGivenException:
         error = 'Ha agotado sus like disponibles para hoy.'
     except IllegalLikeException:
-        error = 'Sucio'
+        error = 'No se permite dar like a uno mismo.'
 
     users = User.objects.all()
 
+    now = dt.now()
+    datetime_day_start = dt(now.year, now.month, now.day)
+    datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
+    day_liked_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end)
+                                                      ).values_list('reported_to_id', flat=True)
+
+    liked_users = []
+    for user in users:
+        if user == request.user:
+            continue
+
+        if user.id in day_liked_users:
+            liked_users.append(user.id)
+
     context = {
         'users': users,
-        'error': error
+        'liked_users': liked_users,
+        'error': error,
     }
 
     return render(request, "dashboard.html", context)

@@ -12,6 +12,10 @@ class Like(models.Model):
     when = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True)
 
+    def __str__(self):
+        return "Like from " + self.reported_by.first_name[0:1] + ". " + self.reported_by.last_name + " to " + \
+            self.reported_to.first_name[0:1] + ". " + self.reported_to.last_name
+
     @classmethod
     def report(cls, reporter, report_to):
         if reporter.pk == report_to.pk:

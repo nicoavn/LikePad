@@ -22,6 +22,7 @@
             </button>
         </div>
     {% endif %}
+
     <table class="table">
     <thead class="thead-dark">
         <tr>
@@ -35,7 +36,15 @@
         <tr>
         <td>{{ u.first_name }} {{ u.last_name }}</td>
         <td class="text-center">{{ u.likes.count }}</td>
-        <td>{% if u != user %}<button type="button" class="btn btn-primary" class="like-btn" onclick="report({{ u.id }})">Like</button>{% endif %}</td>
+        <td>
+            {% if u != user %}
+                {% if u.id in liked_users %}
+                    <button type="button" class="btn btn-danger" class="dislike-btn" onclick="revertReport({{ u.id }})">Dislike</button>
+                {% else %}
+                    <button type="button" class="btn btn-primary" class="like-btn" onclick="report({{ u.id }})">Like</button>
+                {% endif %}
+            {% endif %}
+        </td>
         </tr>
     {% endfor %}
     </tbody>
@@ -48,6 +57,13 @@
         reportToInput.val(report_to);
         let form = $('#like-form');
         form.submit();
+    }
+
+    function revertReport(report_to){
+        {#let reportToInput = $('#report-to-id');#}
+        {#reportToInput.val(report_to);#}
+        {#let form = $('#like-form');#}
+        {#form.submit();#}
     }
 </script>
 </body>
