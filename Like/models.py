@@ -25,10 +25,14 @@ class Like(models.Model):
         datetime_day_start = dt(now.year, now.month, now.day)
         datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
         day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end))
-        day_likes.filter(deleted_at__isnull=True)
+        day_likes = day_likes.filter(deleted_at__isnull=True)
 
-        if day_likes:
+        if len(day_likes) > 1:
             raise DailyVotesAlreadyGivenException()
+
+        day_likes = day_likes.filter(reported_to=report_to)
+        if day_likes:
+            raise AlreadyLikedUserException()
 
         like = Like(reported_by=reporter, reported_to=report_to)
         like.save()
@@ -41,9 +45,9 @@ class Like(models.Model):
         now = dt.now()
         datetime_day_start = dt(now.year, now.month, now.day)
         datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
-        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end))
-        day_likes.filter(deleted_at__isnull=True)
 
-        like = Like.objects.filter(reported_by=reporter, reported_to=report_to)
-        like.deleted_at = now
-        like.save()
+        like = Like.objects.filter(reported_by=reporter, reported_to=report_to, deleted_at__isnull=True,
+                                   when__range=(datetime_day_start, datetime_day_end)).first()
+        if like:
+            like.deleted_at = now
+            like.save()

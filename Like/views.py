@@ -5,8 +5,10 @@ from django.shortcuts import render, redirect
 
 from datetime import datetime as dt
 
+from django.urls import reverse
+
 from Like.models import Like
-from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeException
+from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeException, AlreadyLikedUserException
 
 
 def login_view(request):
@@ -19,18 +21,19 @@ def login_view(request):
     return render(request, "login.html",{})
 
 
-@login_required(login_url="/")
-def home(request):
+# @login_required(login_url="/")
+def home(request, context=None):
     users = User.objects.all()
-
     now = dt.now()
     datetime_day_start = dt(now.year, now.month, now.day)
     datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
-    day_liked_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end)
+    day_liked_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
+                                                      deleted_at__isnull=True
                                                       ).values_list('reported_to_id', flat=True)
 
     liked_users = []
     for user in users:
+        user.like_count = len(user.likes.filter(deleted_at__isnull=True))
         if user == request.user:
             continue
 
@@ -39,13 +42,13 @@ def home(request):
 
     context = {
         'users': users,
-        'liked_users': liked_users,
+        'liked_users': liked_users
     }
 
     return render(request, "dashboard.html", context)
 
 
-@login_required(login_url="/")
+# @login_required(login_url="/")
 def like(request):
     report_to_id = int(request.POST.get('report_to_id', ''))
 
@@ -62,15 +65,17 @@ def like(request):
         error = 'Ha agotado sus like disponibles para hoy.'
     except IllegalLikeException:
         error = 'No se permite dar like a uno mismo.'
+    except AlreadyLikedUserException:
+        error = 'No se permite dar like más de un like por usuario.'
 
     context = {
         'error': error,
     }
 
-    return redirect('Like.views.home', context)
+    return redirect(home)
 
 
-@login_required(login_url="/")
+# @login_required(login_url="/")
 def dislike(request):
     undo_report_to_id = int(request.POST.get('report_to_id', ''))
 
@@ -86,8 +91,4 @@ def dislike(request):
     except Exception as e:
         error = str(e)
 
-    context = {
-        'error': error,
-    }
-
-    return redirect('Like.views.home', context)
+    return redirect(home)

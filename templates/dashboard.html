@@ -38,7 +38,7 @@
     {% for u in users %}
         <tr>
         <td>{{ u.first_name }} {{ u.last_name }}</td>
-        <td class="text-center">{{ u.likes.count }}</td>
+        <td class="text-center">{{ u.like_count }}</td>
         <td>
             {% if u != user %}
                 {% if u.id in liked_users %}
@@ -54,6 +54,7 @@
     </table>
 </form>
     <form action="/dislike" id="dislike-form" method="post">
+        {% csrf_token %}
         <input type="hidden" id="undo-report-to-id" name="report_to_id">
     </form>
 </div>
@@ -72,7 +73,7 @@
         reportToInput.val(revert_report_to);
         let form = $('#dislike-form');
         form.submit();
-        location.reload();
+        {#location.reload();#}
     }
 </script>
 </body>
