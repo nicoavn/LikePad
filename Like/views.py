@@ -53,7 +53,7 @@ def signup_view(request):
     return render(request, "signup.html",{})
 
 
-# @login_required(login_url="/")
+@login_required(login_url="/")
 def home(request, context=None):
     users = User.objects.all()
     now = dt.now()
