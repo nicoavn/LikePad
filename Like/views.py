@@ -12,6 +12,11 @@ from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeExceptio
 
 
 def login_view(request):
+    try:
+        if request.user.is_authenticated():
+            return  redirect(home)
+    except:
+        pass
     return render(request, "login.html",{})
 
 def signup_view(request):
