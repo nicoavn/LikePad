@@ -14,7 +14,7 @@
 <body>
 <br>
 <div class="container">
-    <form id="like-form" action="/like" method="post">
+    <form action="/like" id="like-form" method="post">
     {% csrf_token %}
     <input type="hidden" id="report-to-id" name="report_to_id">
     {% if error %}
@@ -53,6 +53,9 @@
     </tbody>
     </table>
 </form>
+    <form action="/dislike" id="dislike-form" method="post">
+        <input type="hidden" id="undo-report-to-id" name="report_to_id">
+    </form>
 </div>
 <script>
     function report(report_to){
@@ -62,11 +65,14 @@
         form.submit();
     }
 
-    function revertReport(report_to){
-        {#let reportToInput = $('#report-to-id');#}
-        {#reportToInput.val(report_to);#}
-        {#let form = $('#like-form');#}
-        {#form.submit();#}
+    function revertReport(revert_report_to){
+        // $().delete();
+        // revert_report_to
+        let reportToInput = $('#undo-report-to-id');
+        reportToInput.val(revert_report_to);
+        let form = $('#dislike-form');
+        form.submit();
+        location.reload();
     }
 </script>
 </body>

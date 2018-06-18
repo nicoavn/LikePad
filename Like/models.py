@@ -32,3 +32,18 @@ class Like(models.Model):
 
         like = Like(reported_by=reporter, reported_to=report_to)
         like.save()
+
+    @classmethod
+    def undo_report(cls, reporter, report_to):
+        if reporter.pk == report_to.pk:
+            raise IllegalLikeException()
+
+        now = dt.now()
+        datetime_day_start = dt(now.year, now.month, now.day)
+        datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
+        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end))
+        day_likes.filter(deleted_at__isnull=True)
+
+        like = Like.objects.filter(reported_by=reporter, reported_to=report_to)
+        like.deleted_at = now
+        like.save()
