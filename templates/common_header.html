@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-
+     <link rel="stylesheet" href="{% static 'css/style.css' %}"  />
 </head>
-<body>
-<br>
+<body >
 <div class="container">
-    <form id="like-form" action="/like" method="post">
-    {% csrf_token %}
-    <input type="hidden" id="report-to-id" name="report_to_id">
+
+<div class="row">
+<div class="col">
     {% if error %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <strong>¡Error!</strong> {{ error }}
@@ -23,33 +23,11 @@
             </button>
         </div>
     {% endif %}
-    <table class="table">
-    <thead class="thead-dark">
-        <tr>
-            <th>Nombre</th>
-            <th class="text-center">Likes</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for u in users %}
-        <tr>
-        <td>{{ u.first_name }} {{ u.last_name }}</td>
-        <td class="text-center">{{ u.likes.count }}</td>
-        <td>{% if u != user %}<button type="button" class="btn btn-primary" class="like-btn" onclick="report({{ u.id }})">Like</button>{% endif %}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-</form>
 </div>
-<script>
-    function report(report_to){
-        let reportToInput = $('#report-to-id');
-        reportToInput.val(report_to);
-        let form = $('#like-form');
-        form.submit();
-    }
-</script>
+</div>
+<div class="row text-center">
+ {% block content %}{% endblock %}
+</div>
+</div>
 </body>
 </html>
