@@ -32,7 +32,8 @@ def login_api(request):
         login(request, user_found)
         return redirect(home)
     else:
-        return render(request, "login.html",{'error':'Usuario y/o Password invalidos'})
+        return render(request, "login.html", {'error': 'Usuario y/o Password invalidos'})
+
 
 def signup_api(request):
     password = request.POST.get('password', '')
@@ -52,8 +53,6 @@ def signup_api(request):
 
     return render(request, "signup.html", {})
 
-def signup_view(request):
-    return render(request, "signup.html",{})
 
 @login_required(login_url="/")
 def log_out(request):
@@ -72,22 +71,25 @@ def home(request, context=None):
 
     liked_users = []
     for user in users:
-        user.like_count = len(user.likes.filter(deleted_at__isnull=True))
+        user.day_likes = len(Like.get_day_likes(user))
+        user.week_likes = len(Like.get_week_likes(user))
+
         if user == request.user:
             continue
 
         if user.id in day_liked_users:
             liked_users.append(user.id)
 
-    context = {
-        'users': users,
-        'liked_users': liked_users
-    }
+    if not context:
+        context = {}
+    context['users'] = users
+    context['liked_users'] = liked_users
+    context['week_likes'] = liked_users
 
     return render(request, "dashboard.html", context)
 
 
-# @login_required(login_url="/")
+@login_required(login_url="/")
 def like(request):
     report_to_id = int(request.POST.get('report_to_id', ''))
 
@@ -114,7 +116,7 @@ def like(request):
     return redirect(home)
 
 
-# @login_required(login_url="/")
+@login_required(login_url="/")
 def dislike(request):
     undo_report_to_id = int(request.POST.get('report_to_id', ''))
 
@@ -124,10 +126,13 @@ def dislike(request):
     except User.DoesNotExist:
         pass
 
-    error = None
     try:
         Like.undo_report(reporter=request.user, report_to=undo_report_to)
     except Exception as e:
         error = str(e)
 
     return redirect(home)
+
+
+# @login_required(login_url="/")
+# def dislike(request):

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from datetime import datetime as dt
+import datetime
 
 # Create your models here.
 from Like.Exceptions import *
@@ -21,11 +21,11 @@ class Like(models.Model):
         if reporter.pk == report_to.pk:
             raise IllegalLikeException()
 
-        now = dt.now()
-        datetime_day_start = dt(now.year, now.month, now.day)
-        datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
-        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end))
-        day_likes = day_likes.filter(deleted_at__isnull=True)
+        now = datetime.datetime.now()
+        datetime_day_start = datetime.datetime(now.year, now.month, now.day)
+        datetime_day_end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
+        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end),
+                                        reported_by=reporter, deleted_at__isnull=True)
 
         if len(day_likes) > 2:
             raise DailyVotesAlreadyGivenException()
@@ -42,12 +42,34 @@ class Like(models.Model):
         if reporter.pk == report_to.pk:
             raise IllegalLikeException()
 
-        now = dt.now()
-        datetime_day_start = dt(now.year, now.month, now.day)
-        datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
+        now = datetime.datetime.now()
+        datetime_day_start = datetime.datetime(now.year, now.month, now.day)
+        datetime_day_end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
 
         like = Like.objects.filter(reported_by=reporter, reported_to=report_to, deleted_at__isnull=True,
                                    when__range=(datetime_day_start, datetime_day_end)).first()
         if like:
             like.deleted_at = now
             like.save()
+
+    @classmethod
+    def get_day_likes(cls, user):
+        now = datetime.datetime.now()
+        datetime_day_start = datetime.datetime(now.year, now.month, now.day)
+        datetime_day_end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
+        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end), deleted_at__isnull=True)
+        return day_likes.filter(reported_to=user)
+
+    @classmethod
+    def get_week_likes(cls, user):
+        now = datetime.datetime.now()
+        datetime_day_start = datetime.datetime(now.year, now.month, now.day)
+        datetime_day_end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
+
+        idx = (datetime_day_start.weekday() + 1) % 7  # MON = 0, SUN = 6 -> SUN = 0 .. SAT = 6
+        mon = datetime_day_start - datetime.timedelta(idx - 1)
+        fri = datetime_day_end + datetime.timedelta(idx + 1)
+
+        week_likes = Like.objects.filter(when__range=(mon, fri), deleted_at__isnull=True)
+
+        return week_likes.filter(reported_to=user)

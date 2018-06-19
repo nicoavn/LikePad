@@ -66,8 +66,9 @@
     <table class="table">
     <thead class="thead-dark">
         <tr>
-            <th>Nombre</th>
-            <th class="text-center">Likes</th>
+            <th>Name</th>
+            <th class="text-center">Day Likes</th>
+            <th class="text-center">Week Likes</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -75,7 +76,8 @@
     {% for u in users %}
         <tr>
         <td>{{ u.first_name }} {{ u.last_name }}</td>
-        <td class="text-center">{{ u.like_count }}</td>
+        <td class="text-center">{{ u.day_likes }}</td>
+        <td class="text-center">{{ u.week_likes }}</td>
         <td>
             {% if u != user %}
                 {% if u.id in liked_users %}
