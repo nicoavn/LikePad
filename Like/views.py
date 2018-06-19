@@ -5,22 +5,20 @@ from django.shortcuts import render, redirect
 
 from datetime import datetime as dt
 
-from django.urls import reverse
 
 from Like.models import Like
 from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeException, AlreadyLikedUserException
 
 
 def login_view(request):
-    try:
-        if request.user.is_authenticated:
-            return  redirect(home)
-    except:
-        pass
-    return render(request, "login.html",{})
+    if request.user.is_authenticated:
+        return redirect(home)
+    return render(request, "login.html", {})
+
 
 def signup_view(request):
-    return render(request, "signup.html",{})
+    return render(request, "signup.html", {})
+
 
 def login_api(request):
     user = request.POST.get('user', '')
@@ -31,7 +29,8 @@ def login_api(request):
         login(request, user_found)
         return redirect(home)
     else:
-        return render(request, "login.html",{'error':'Usuario y/o Password invalidos'})
+        return render(request, "login.html", {'error': 'Usuario y/o Password invalidos'})
+
 
 def signup_api(request):
     password = request.POST.get('password', '')
@@ -40,17 +39,15 @@ def signup_api(request):
     email = request.POST.get('email', '')
 
     try:
-        user_created = User.objects.create_user(username=email,email=email,first_name=name,last_name=last_name,password=password)
-    except Exception as e :
-        return render(request, "signup.html", {"error":"Datos incorrectos"})
+        user_created = User.objects.create_user(username=email, email=email, first_name=name, last_name=last_name,
+                                                password=password)
+    except Exception:
+        return render(request, "signup.html", {"error": "Datos incorrectos"})
 
     if user_created:
         return render(request, "login.html", {})
 
     return render(request, "signup.html", {})
-
-def signup_view(request):
-    return render(request, "signup.html",{})
 
 
 @login_required(login_url="/")
@@ -65,7 +62,9 @@ def home(request, context=None):
 
     liked_users = []
     for user in users:
-        user.like_count = len(user.likes.filter(deleted_at__isnull=True))
+        user.day_likes = len(Like.get_day_likes(user))
+        user.week_likes = len(Like.get_week_likes(user))
+
         if user == request.user:
             continue
 
@@ -76,11 +75,12 @@ def home(request, context=None):
         context = {}
     context['users'] = users
     context['liked_users'] = liked_users
+    context['week_likes'] = liked_users
 
     return render(request, "dashboard.html", context)
 
 
-# @login_required(login_url="/")
+@login_required(login_url="/")
 def like(request):
     report_to_id = int(request.POST.get('report_to_id', ''))
 
@@ -107,7 +107,7 @@ def like(request):
     return redirect(home)
 
 
-# @login_required(login_url="/")
+@login_required(login_url="/")
 def dislike(request):
     undo_report_to_id = int(request.POST.get('report_to_id', ''))
 
@@ -117,10 +117,13 @@ def dislike(request):
     except User.DoesNotExist:
         pass
 
-    error = None
     try:
         Like.undo_report(reporter=request.user, report_to=undo_report_to)
     except Exception as e:
         error = str(e)
 
     return redirect(home)
+
+
+# @login_required(login_url="/")
+# def dislike(request):
