@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 
 from datetime import datetime as dt
 
@@ -39,6 +40,8 @@ def signup_api(request):
     last_name = request.POST.get('lastName', '')
     email = request.POST.get('email', '')
 
+    user_found = User.objects.filter(email)
+
     try:
         user_created = User.objects.create_user(username=email,email=email,first_name=name,last_name=last_name,password=password)
     except Exception as e :
@@ -52,8 +55,12 @@ def signup_api(request):
 def signup_view(request):
     return render(request, "signup.html",{})
 
+@login_required(login_url="/")
+def log_out(request):
+    logout(request)
+    return redirect(home)
 
-# @login_required(login_url="/")
+@login_required(login_url="/")
 def home(request, context=None):
     users = User.objects.all()
     now = dt.now()
