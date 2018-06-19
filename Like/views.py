@@ -118,7 +118,7 @@ def like(request):
 
 
 
-    return redirect("/home?message="+str(error))
+    return redirect("/home?message="+str(error if error else ''))
 
 
 @login_required(login_url="/")
