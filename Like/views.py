@@ -64,6 +64,7 @@ def log_out(request):
 @login_required(login_url="/")
 def home(request, context=None):
     users = User.objects.all()
+    message = request.GET.get("message", '')
     now = dt.now()
     datetime_day_start = dt(now.year, now.month, now.day)
     datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
@@ -87,6 +88,8 @@ def home(request, context=None):
     context['users'] = users
     context['liked_users'] = liked_users
     context['week_likes'] = liked_users
+    context['error'] = message if message else ''
+
 
     return render(request, "dashboard.html", context)
 
@@ -110,12 +113,12 @@ def like(request):
         error = 'No se permite dar like a uno mismo.'
     except AlreadyLikedUserException:
         error = 'No se permite dar like más de un like por usuario.'
+    except Exception:
+        error = 'Este... Hay que debuguear.'
 
-    context = {
-        'error': error,
-    }
 
-    return redirect(home)
+
+    return redirect("/home?message="+str(error))
 
 
 @login_required(login_url="/")
