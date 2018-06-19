@@ -41,11 +41,13 @@ def signup_api(request):
     last_name = request.POST.get('lastName', '')
     email = request.POST.get('email', '')
 
-    user_found = User.objects.filter(email)
+    user_found = User.objects.filter(email=email)
+    if user_found:
+        return render(request, "signup.html", {"error": "Email no disponible"})
 
     try:
         user_created = User.objects.create_user(username=email,email=email,first_name=name,last_name=last_name,password=password)
-    except Exception as e :
+    except:
         return render(request, "signup.html", {"error":"Datos incorrectos"})
 
     if user_created:
