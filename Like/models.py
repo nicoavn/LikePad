@@ -24,7 +24,8 @@ class Like(models.Model):
         now = datetime.datetime.now()
         datetime_day_start = datetime.datetime(now.year, now.month, now.day)
         datetime_day_end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
-        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end), deleted_at__isnull=True)
+        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end),
+                                        reported_by=reporter, deleted_at__isnull=True)
 
         if len(day_likes) > 2:
             raise DailyVotesAlreadyGivenException()
