@@ -72,10 +72,10 @@ def home(request, context=None):
         if user.id in day_liked_users:
             liked_users.append(user.id)
 
-    context = {
-        'users': users,
-        'liked_users': liked_users
-    }
+    if not context:
+        context = {}
+    context['users'] = users
+    context['liked_users'] = liked_users
 
     return render(request, "dashboard.html", context)
 
