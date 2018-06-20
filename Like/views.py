@@ -113,8 +113,8 @@ def like(request):
         error = 'No se permite dar like a uno mismo.'
     except AlreadyLikedUserException:
         error = 'No se permite dar like más de un like por usuario.'
-    except Exception:
-        error = 'Este... Hay que debuguear.'
+    # except Exception:
+    #     error = 'Este... Hay que debuguear.'
 
 
 
