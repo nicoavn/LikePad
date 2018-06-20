@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 import datetime
-from django.utils import timezone
+import django.utils.timezone as tz
 
 # Create your models here.
 from Like.Exceptions import *
@@ -10,7 +10,7 @@ from Like.Exceptions import *
 class Like(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes_given")
     reported_to = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes")
-    when = models.DateTimeField(auto_now=True)
+    when = models.DateTimeField(null=True)
     deleted_at = models.DateTimeField(null=True)
 
     def __str__(self):
@@ -22,9 +22,9 @@ class Like(models.Model):
         if reporter.pk == report_to.pk:
             raise IllegalLikeException()
 
-        now = timezone.now()
-        datetime_day_start = timezone.datetime(now.year, now.month, now.day)
-        datetime_day_end = timezone.datetime(now.year, now.month, now.day, 23, 59, 59)
+        now = tz.datetime.now()
+        datetime_day_start = tz.datetime(now.year, now.month, now.day)
+        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
         day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end),
                                         reported_by=reporter, deleted_at__isnull=True)
 
@@ -35,7 +35,7 @@ class Like(models.Model):
         if day_likes:
             raise AlreadyLikedUserException()
 
-        like = Like(reported_by=reporter, reported_to=report_to)
+        like = Like(reported_by=reporter, reported_to=report_to, when=now)
         like.save()
 
     @classmethod
@@ -43,9 +43,9 @@ class Like(models.Model):
         if reporter.pk == report_to.pk:
             raise IllegalLikeException()
 
-        now = timezone.now()
-        datetime_day_start = timezone.datetime(now.year, now.month, now.day)
-        datetime_day_end = timezone.datetime(now.year, now.month, now.day, 23, 59, 59)
+        now = tz.datetime.now()
+        datetime_day_start = tz.datetime(now.year, now.month, now.day)
+        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
 
         like = Like.objects.filter(reported_by=reporter, reported_to=report_to, deleted_at__isnull=True,
                                    when__range=(datetime_day_start, datetime_day_end)).first()
@@ -55,17 +55,17 @@ class Like(models.Model):
 
     @classmethod
     def get_day_likes(cls, user):
-        now = timezone.now()
-        datetime_day_start = timezone.datetime(now.year, now.month, now.day, 0, 0, 0)
-        datetime_day_end = timezone.datetime(now.year, now.month, now.day, 23, 59, 59)
+        now = tz.datetime.now()
+        datetime_day_start = tz.datetime(now.year, now.month, now.day, 0, 0, 0)
+        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
         day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end), deleted_at__isnull=True)
         return day_likes.filter(reported_to=user)
 
     @classmethod
     def get_week_likes(cls, user):
-        now = timezone.now()
-        datetime_day_start = timezone.datetime(now.year, now.month, now.day)
-        datetime_day_end = timezone.datetime(now.year, now.month, now.day, 23, 59, 59)
+        now = tz.datetime.now()
+        datetime_day_start = tz.datetime(now.year, now.month, now.day)
+        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
 
         idx = (datetime_day_start.weekday() + 1) % 7  # MON = 0, SUN = 6 -> SUN = 0 .. SAT = 6
         mon = datetime_day_start - datetime.timedelta(idx - 1)

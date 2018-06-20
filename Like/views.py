@@ -116,8 +116,6 @@ def like(request):
     # except Exception:
     #     error = 'Este... Hay que debuguear.'
 
-
-
     return redirect("/home?message="+str(error if error else ''))
 
 
