@@ -95,6 +95,11 @@ class Like(models.Model):
 
         user_week_likes = User.objects.values('id') \
             .filter(likes__deleted_at__isnull=True, likes__when__range=(mon, fri)) \
+            .order_by("-week_likes") \
             .annotate(week_likes=Count('likes'))
+
+        if len(user_week_likes) > 2:
+            wins_amount = user_week_likes[2].week_likes
+            user_week_likes = user_week_likes.filter(week_likes__gt=wins_amount)
 
         return list(user_week_likes)
