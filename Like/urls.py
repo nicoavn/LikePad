@@ -10,4 +10,5 @@ urlpatterns = [
     path('like', views.like),
     path('dislike', views.dislike),
     path('home', views.home),
+    path('awards', views.awards),
 ]

@@ -4,6 +4,8 @@ import datetime
 import django.utils.timezone as tz
 
 # Create your models here.
+from django.db.models import Sum, Count
+
 from Like.Exceptions import *
 
 
@@ -74,3 +76,25 @@ class Like(models.Model):
         week_likes = Like.objects.filter(when__range=(mon, fri), deleted_at__isnull=True)
 
         return week_likes.filter(reported_to=user)
+
+    @classmethod
+    def get_week_awards(cls):
+        awarded_users = []
+
+        now = tz.datetime.now()
+        datetime_day_start = tz.datetime(now.year, now.month, now.day)
+        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
+
+        idx = (datetime_day_start.weekday() + 1) % 7  # MON = 0, SUN = 6 -> SUN = 0 .. SAT = 6
+        mon = datetime_day_start - datetime.timedelta(idx - 1)
+        fri = datetime_day_end + datetime.timedelta(idx + 1)
+
+        # u.likes.filter().values_list("user.id", "likes__", flat=True)
+
+        # user_week_likes = u.likes.filter()
+
+        user_week_likes = User.objects.values('id') \
+            .filter(likes__deleted_at__isnull=True, likes__when__range=(datetime_day_start, datetime_day_end)) \
+            .annotate(week_likes=Count('likes'))
+
+        return list(user_week_likes)

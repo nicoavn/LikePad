@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 
@@ -60,6 +61,7 @@ def signup_api(request):
 def log_out(request):
     logout(request)
     return redirect(home)
+
 
 @login_required(login_url="/")
 def home(request, context=None):
@@ -138,5 +140,8 @@ def dislike(request):
 
 
 @login_required(login_url="/")
-def get_winners(request):
-    pass
+def awards(request):
+    context = {
+        'users': Like.get_week_awards()
+    }
+    return JsonResponse(context, safe=False)
