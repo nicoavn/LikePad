@@ -134,5 +134,6 @@ def dislike(request):
     return redirect(home)
 
 
-# @login_required(login_url="/")
-# def dislike(request):
+@login_required(login_url="/")
+def get_winners(request):
+    pass
