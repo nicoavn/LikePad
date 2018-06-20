@@ -94,7 +94,7 @@ class Like(models.Model):
         # user_week_likes = u.likes.filter()
 
         user_week_likes = User.objects.values('id') \
-            .filter(likes__deleted_at__isnull=True, likes__when__range=(datetime_day_start, datetime_day_end)) \
+            .filter(likes__deleted_at__isnull=True, likes__when__range=(mon, fri)) \
             .annotate(week_likes=Count('likes'))
 
         return list(user_week_likes)
