@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- {% load static %}
+    {% load static %}
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"  />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+          integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+            integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/regular.css"
+          integrity="sha384-EWu6DiBz01XlR6XGsVuabDMbDN6RT8cwNoY+3tIH+6pUCfaNldJYJQfQlbEIWLyA" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/fontawesome.css"
+          integrity="sha384-GVa9GOgVQgOk+TNYXu7S/InPTfSDTtBalSgkgqQ7sCik56N9ztlkoTr2f/T44oKV" crossorigin="anonymous">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -49,60 +60,66 @@
 
 <div class="container">
     <form action="/like" id="like-form" method="post">
-    {% csrf_token %}
-    <input type="hidden" id="report-to-id" name="report_to_id">
-    {% if error %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>¡Error!</strong> {{ error }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    {% endif %}
+        {% csrf_token %}
+        <input type="hidden" id="report-to-id" name="report_to_id">
+        {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>¡Error!</strong> {{ error }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endif %}
 
-    <table class="table">
-    <thead class="thead-dark">
-        <tr>
-            <th>Name</th>
-            <th class="text-center">Day Likes</th>
-            <th class="text-center">Week Likes</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for u in users %}
-        <tr>
-        <td>{{ u.first_name }} {{ u.last_name }}</td>
-        <td class="text-center">{{ u.day_likes }}</td>
-        <td class="text-center">{{ u.week_likes }}</td>
-        <td>
-            {% if u != user %}
-                {% if u.id in liked_users %}
-                    <button type="button" class="btn btn-danger" class="dislike-btn" onclick="revertReport({{ u.id }})">Dislike</button>
-                {% else %}
-                    <button type="button" class="btn btn-primary" class="like-btn" onclick="report({{ u.id }})">Like</button>
-                {% endif %}
-            {% endif %}
-        </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-</form>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th class="text-center">Day Likes</th>
+                <th class="text-center">Week Likes</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>{{ u.first_name }} {{ u.last_name }}</td>
+                    <td class="text-center">{{ u.day_likes }}</td>
+                    <td class="text-center">{{ u.week_likes }}</td>
+                    <td>
+                        {% if u != user %}
+                            {% if u.id in liked_users %}
+                                <button type="button" class="btn btn-danger btn-sm dislike-btn"
+                                        onclick="revertReport({{ u.id }})">Unlike
+{#                                <i class="far fa-thumbs-down"></i>#}
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-primary btn-sm like-btn"
+                                        onclick="report({{ u.id }})">Like
+                                <i class="far fa-thumbs-up"></i>
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
     <form action="/dislike" id="dislike-form" method="post">
         {% csrf_token %}
         <input type="hidden" id="undo-report-to-id" name="report_to_id">
     </form>
 </div>
 <script>
-    function report(report_to){
+    function report(report_to) {
         let reportToInput = $('#report-to-id');
         reportToInput.val(report_to);
         let form = $('#like-form');
         form.submit();
     }
 
-    function revertReport(revert_report_to){
+    function revertReport(revert_report_to) {
         // $().delete();
         // revert_report_to
         let reportToInput = $('#undo-report-to-id');
