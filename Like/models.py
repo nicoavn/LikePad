@@ -79,7 +79,6 @@ class Like(models.Model):
 
     @classmethod
     def get_week_awards(cls):
-        awarded_users = []
 
         now = tz.datetime.now()
         datetime_day_start = tz.datetime(now.year, now.month, now.day)
@@ -89,17 +88,13 @@ class Like(models.Model):
         mon = datetime_day_start - datetime.timedelta(idx - 1)
         fri = datetime_day_end + datetime.timedelta(idx + 1)
 
-        # u.likes.filter().values_list("user.id", "likes__", flat=True)
-
-        # user_week_likes = u.likes.filter()
-
-        user_week_likes = User.objects.values('id') \
+        user_week_likes = User.objects.values('id', 'first_name', 'last_name') \
             .filter(likes__deleted_at__isnull=True, likes__when__range=(mon, fri)) \
             .order_by("-week_likes") \
             .annotate(week_likes=Count('likes'))
 
         if len(user_week_likes) > 2:
-            wins_amount = user_week_likes[2].week_likes
-            user_week_likes = user_week_likes.filter(week_likes__gt=wins_amount)
+            wins_amount = int(user_week_likes[2]['week_likes'])
+            user_week_likes = user_week_likes.filter(week_likes__gte=wins_amount)
 
         return list(user_week_likes)
