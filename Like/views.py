@@ -63,6 +63,18 @@ def log_out(request):
     return redirect(home)
 
 
+def calculate_strickes(stricks):
+    n = 0
+    pesos = 0
+    for strick in range(stricks):
+        n = n+1
+        if n == 5:
+            pesos = pesos + 50
+        if n > 5:
+            pesos = pesos + 5
+    return pesos
+
+
 @login_required(login_url="/")
 def home(request, context=None):
     users = User.objects.all()
@@ -73,12 +85,11 @@ def home(request, context=None):
     day_liked_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
                                                       deleted_at__isnull=True
                                                       ).values_list('reported_to_id', flat=True)
-
     liked_users = []
     for user in users:
         user.day_likes = len(Like.get_day_likes(user))
         user.week_likes = len(Like.get_week_likes(user))
-
+        user.pesos = calculate_strickes(len(Like.get_week_likes(user)))
         if user == request.user:
             continue
 
@@ -91,7 +102,6 @@ def home(request, context=None):
     context['liked_users'] = liked_users
     context['week_likes'] = liked_users
     context['error'] = message if message else ''
-
 
     return render(request, "dashboard.html", context)
 

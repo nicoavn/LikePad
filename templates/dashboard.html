@@ -24,7 +24,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/home">LikePad</a>
+    <a class="navbar-brand" href="/home">English Challenger</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
             aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -74,13 +74,13 @@
 
         <div class="row">
             <div class="col-md-9">
-                <h3>Challengers</h3>
+                <h3>English Challenger</h3>
                 <table class="table table-striped">
                     <thead class="thead-dark">
                     <tr>
                         <th>Name</th>
-                        <th class="text-center">Day Likes</th>
-                        <th class="text-center">Week Likes</th>
+                        <th class="text-center">Debt</th>
+                        <th class="text-center">Strikes</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -88,21 +88,24 @@
                     {% for u in users %}
                         <tr>
                             <td>{{ u.first_name }} {{ u.last_name }}</td>
-                            <td class="text-center">{{ u.day_likes }}</td>
+                            <td class="text-center">Owe {{ u.pesos }} pesos</td>
                             <td class="text-center">{{ u.week_likes }}</td>
                             <td>
                                 {% if u != user %}
-                                    {% if u.id in liked_users %}
-                                        <button type="button" class="btn btn-danger btn-sm dislike-btn"
-                                                onclick="revertReport({{ u.id }})">Unlike
+
+                                        <button type="button" class="btn btn-primary btn-sm like-btn"
+                                                onclick="report({{ u.id }})">Stricke
+                                            <i class="far fa-thumbs-down"></i>
+                                        </button>
+                                    |
+                                    <button type="button" class="btn btn-danger btn-sm dislike-btn "
+                                                onclick="revertReport({{ u.id }})">
+                                        <i class="far fa-money-bill-alt"></i>
+                                        Pay
+                                         <i class="far fa-thumbs-up"></i>
                                             {#                                <i class="far fa-thumbs-down"></i>#}
                                         </button>
-                                    {% else %}
-                                        <button type="button" class="btn btn-primary btn-sm like-btn"
-                                                onclick="report({{ u.id }})">Like
-                                            <i class="far fa-thumbs-up"></i>
-                                        </button>
-                                    {% endif %}
+
                                 {% endif %}
                             </td>
                         </tr>
@@ -116,7 +119,7 @@
                     <thead class="thead-dark">
                     <tr>
                         <th>Name</th>
-                        <th>Likes</th>
+                        <th>Strikes</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -154,12 +157,13 @@
     function revertReport(revert_report_to) {
         // $().delete();
         // revert_report_to
+        if (confirm("Are you sure that She/He Pay all the money?")){
         let reportToInput = $('#undo-report-to-id');
         reportToInput.val(revert_report_to);
         let form = $('#dislike-form');
         form.submit();
         {#location.reload();#}
-    }
+    }}
 </script>
 </body>
 </html>

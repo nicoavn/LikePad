@@ -19,24 +19,24 @@ class Like(models.Model):
         return "Like from " + self.reported_by.first_name[0:1] + ". " + self.reported_by.last_name + " to " + \
             self.reported_to.first_name[0:1] + ". " + self.reported_to.last_name
 
+
     @classmethod
     def report(cls, reporter, report_to):
         if reporter.pk == report_to.pk:
             raise IllegalLikeException()
 
         now = tz.datetime.now()
-        datetime_day_start = tz.datetime(now.year, now.month, now.day)
-        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
-        day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end),
-                                        reported_by=reporter, deleted_at__isnull=True)
+        #datetime_day_start = tz.datetime(now.year, now.month, now.day)
+        #datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
+        #day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end),
+        #                                reported_by=reporter, deleted_at__isnull=True)
 
-        if len(day_likes) > 2:
-            raise DailyVotesAlreadyGivenException()
+        #if len(day_likes) > 2:
+         #   raise DailyVotesAlreadyGivenException()
 
-        day_likes = day_likes.filter(reported_to=report_to)
-        if day_likes:
-            raise AlreadyLikedUserException()
-
+        #day_likes = day_likes.filter(reported_to=report_to)
+        #if day_likes:
+        #    raise AlreadyLikedUserException()
         like = Like(reported_by=reporter, reported_to=report_to, when=now)
         like.save()
 
@@ -49,11 +49,8 @@ class Like(models.Model):
         datetime_day_start = tz.datetime(now.year, now.month, now.day)
         datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
 
-        like = Like.objects.filter(reported_by=reporter, reported_to=report_to, deleted_at__isnull=True,
-                                   when__range=(datetime_day_start, datetime_day_end)).first()
-        if like:
-            like.deleted_at = now
-            like.save()
+        Like.objects.filter(reported_by=reporter, reported_to=report_to).update(deleted_at=now)
+
 
     @classmethod
     def get_day_likes(cls, user):
