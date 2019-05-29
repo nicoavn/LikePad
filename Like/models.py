@@ -9,6 +9,17 @@ from django.db.models import Sum, Count
 from Like.Exceptions import *
 
 
+class Debts(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="debs")
+    quantity = models.IntegerField(default=0)
+    when = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
+
+    @classmethod
+    def get_user_debs(cls, user):
+        return Debts.objects.filter(user_id=user)
+
+
 class Like(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes_given")
     reported_to = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes")
@@ -18,7 +29,6 @@ class Like(models.Model):
     def __str__(self):
         return "Like from " + self.reported_by.first_name[0:1] + ". " + self.reported_by.last_name + " to " + \
             self.reported_to.first_name[0:1] + ". " + self.reported_to.last_name
-
 
     @classmethod
     def report(cls, reporter, report_to):

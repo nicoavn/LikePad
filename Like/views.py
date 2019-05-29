@@ -82,10 +82,10 @@ def home(request, context=None):
     now = dt.now()
     datetime_day_start = dt(now.year, now.month, now.day)
     datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
-    day_liked_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
-                                                      deleted_at__isnull=True
-                                                      ).values_list('reported_to_id', flat=True)
+    day_strickes_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
+                                                         deleted_at__isnull=True).values_list('reported_to_id', flat=True)
     liked_users = []
+    daily_strickes = []
     for user in users:
         user.day_likes = len(Like.get_day_likes(user))
         user.week_likes = len(Like.get_week_likes(user))
@@ -93,13 +93,13 @@ def home(request, context=None):
         if user == request.user:
             continue
 
-        if user.id in day_liked_users:
-            liked_users.append(user.id)
+        if user.id in day_strickes_users:
+            daily_strickes.append(user.id)
 
     if not context:
         context = {}
     context['users'] = users
-    context['liked_users'] = liked_users
+    context['liked_users'] = daily_strickes
     context['week_likes'] = liked_users
     context['error'] = message if message else ''
 
