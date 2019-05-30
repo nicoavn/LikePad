@@ -19,6 +19,27 @@ class Debts(models.Model):
     def get_user_debs(cls, user):
         return Debts.objects.filter(user_id=user)
 
+    @classmethod
+    def get_day_user_debs(cls, user):
+
+        now = tz.datetime.now()
+        datetime_day_start = tz.datetime(now.year, now.month, now.day, 0, 0, 0)
+        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
+        day_debs = Debts.objects.filter(when__range=(datetime_day_start, datetime_day_end), deleted_at__isnull=True)
+
+        return day_debs.filter(user_id=user)
+
+    @classmethod
+    def save_user_debs(cls, user, quantity):
+        now = tz.datetime.now()
+        debt = Debts(user_id=user, quantity=quantity, when=now)
+        debt.save()
+
+    @classmethod
+    def delete_user_debs(cls,user):
+        now = tz.datetime.now()
+        Debts.objects.filter(user_id=user).update(deleted_at=now)
+
 
 class Like(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes_given")
@@ -32,35 +53,14 @@ class Like(models.Model):
 
     @classmethod
     def report(cls, reporter, report_to):
-        if reporter.pk == report_to.pk:
-            raise IllegalLikeException()
-
         now = tz.datetime.now()
-        #datetime_day_start = tz.datetime(now.year, now.month, now.day)
-        #datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
-        #day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end),
-        #                                reported_by=reporter, deleted_at__isnull=True)
-
-        #if len(day_likes) > 2:
-         #   raise DailyVotesAlreadyGivenException()
-
-        #day_likes = day_likes.filter(reported_to=report_to)
-        #if day_likes:
-        #    raise AlreadyLikedUserException()
         like = Like(reported_by=reporter, reported_to=report_to, when=now)
         like.save()
 
     @classmethod
     def undo_report(cls, reporter, report_to):
-        if reporter.pk == report_to.pk:
-            raise IllegalLikeException()
-
         now = tz.datetime.now()
-        datetime_day_start = tz.datetime(now.year, now.month, now.day)
-        datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
-
         Like.objects.filter(reported_by=reporter, reported_to=report_to).update(deleted_at=now)
-
 
     @classmethod
     def get_day_likes(cls, user):

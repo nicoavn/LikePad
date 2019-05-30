@@ -9,7 +9,7 @@ from datetime import datetime as dt
 
 from django.urls import reverse
 
-from Like.models import Like
+from Like.models import Like, Debts
 from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeException, AlreadyLikedUserException
 
 
@@ -84,23 +84,23 @@ def home(request, context=None):
     datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
     day_strickes_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
                                                          deleted_at__isnull=True).values_list('reported_to_id', flat=True)
-    liked_users = []
-    daily_strickes = []
+    all_stricks_users = []
+    daily_stricks = []
     for user in users:
-        user.day_likes = len(Like.get_day_likes(user))
-        user.week_likes = len(Like.get_week_likes(user))
+        user.day_strickes = len(Like.get_day_likes(user))
+        user.all_debs_pesos = len(Like.get_week_likes(user))
         user.pesos = calculate_strickes(len(Like.get_week_likes(user)))
         if user == request.user:
             continue
 
         if user.id in day_strickes_users:
-            daily_strickes.append(user.id)
+            daily_stricks.append(user.id)
 
     if not context:
         context = {}
     context['users'] = users
-    context['liked_users'] = daily_strickes
-    context['week_likes'] = liked_users
+    context['liked_users'] = daily_stricks
+    context['week_likes'] = all_stricks_users
     context['error'] = message if message else ''
 
     return render(request, "dashboard.html", context)
@@ -119,14 +119,19 @@ def like(request):
     error = None
     try:
         Like.report(reporter=request.user, report_to=report_to)
+
+        strickes = len(Like.get_day_likes(report_to))
+        today_user_debs = Debts.get_day_user_debs(report_to)
+        if strickes >= 5:
+            if len(today_user_debs) > 0:
+                today_user_debs.update(quantity=calculate_strickes(strickes))
+            else:
+                Debts.save_user_debs(user=report_to, quantity=calculate_strickes(strickes))
+
     except DailyVotesAlreadyGivenException:
         error = 'Ha agotado sus like disponibles para hoy.'
-    except IllegalLikeException:
-        error = 'No se permite dar like a uno mismo.'
     except AlreadyLikedUserException:
         error = 'No se permite dar like más de un like por usuario.'
-    # except Exception:
-    #     error = 'Este... Hay que debuguear.'
 
     return redirect("/home?message="+str(error if error else ''))
 
@@ -138,11 +143,13 @@ def dislike(request):
     undo_report_to = None
     try:
         undo_report_to = User.objects.get(id=undo_report_to_id)
+
     except User.DoesNotExist:
         pass
 
     try:
         Like.undo_report(reporter=request.user, report_to=undo_report_to)
+        Debts.delete_user_debs(user=undo_report_to)
     except Exception as e:
         error = str(e)
 
