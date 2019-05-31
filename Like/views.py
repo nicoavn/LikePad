@@ -63,16 +63,16 @@ def log_out(request):
     return redirect(home)
 
 
-def calculate_strickes(stricks):
+def calculate_strikes(stricks):
     n = 0
-    pesos = 0
+    amount = 0
     for strick in range(stricks):
         n = n+1
         if n == 5:
-            pesos = pesos + 50
+            amount = amount + 50
         if n > 5:
-            pesos = pesos + 5
-    return pesos
+            amount = amount + 5
+    return amount
 
 
 @login_required(login_url="/")
@@ -82,24 +82,31 @@ def home(request, context=None):
     now = dt.now()
     datetime_day_start = dt(now.year, now.month, now.day)
     datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
-    day_strickes_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
+    day_strikes_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
                                                          deleted_at__isnull=True).values_list('reported_to_id', flat=True)
     all_stricks_users = []
     daily_stricks = []
+    #last_user_report = list(Like.objects.filter(reported_to__in=list(users), deleted_at__isnull=True).values('reported_by', 'comment').annotate(when=max('when')))
     for user in users:
-        user.day_strickes = len(Like.get_day_likes(user))
-        user.all_debs_pesos = len(Like.get_week_likes(user))
-        user.pesos = calculate_strickes(len(Like.get_week_likes(user)))
+        user.day_strikes = len(Like.get_day_likes(user))
+        user.all_debs_amount = len(Like.get_week_likes(user))
+        user.day_amount = calculate_strikes(len(Like.get_week_likes(user)))
+        user.complete_amount = Debts.get_user_debs(user)
+
+        #if user.id in last_user_report[0]:
+        #    user.last_reporter = User.objects.filter(id=last_user_report[0]).first()
+        #    user.last_user_comment = last_user_report[1]
+
         if user == request.user:
             continue
 
-        if user.id in day_strickes_users:
+        if user.id in day_strikes_users:
             daily_stricks.append(user.id)
 
     if not context:
         context = {}
     context['users'] = users
-    context['liked_users'] = daily_stricks
+    context['daily_stricks'] = daily_stricks
     context['week_likes'] = all_stricks_users
     context['error'] = message if message else ''
 
@@ -109,6 +116,7 @@ def home(request, context=None):
 @login_required(login_url="/")
 def like(request):
     report_to_id = int(request.POST.get('report_to_id', ''))
+    comment = request.POST.get('reported_by_comment', '')
 
     report_to = None
     try:
@@ -118,15 +126,15 @@ def like(request):
 
     error = None
     try:
-        Like.report(reporter=request.user, report_to=report_to)
+        Like.report(reporter=request.user, report_to=report_to, comment=comment)
 
-        strickes = len(Like.get_day_likes(report_to))
+        strikes = len(Like.get_day_likes(report_to))
         today_user_debs = Debts.get_day_user_debs(report_to)
-        if strickes >= 5:
+        if strikes >= 5:
             if len(today_user_debs) > 0:
-                today_user_debs.update(quantity=calculate_strickes(strickes))
+                today_user_debs.update(quantity=calculate_strikes(strikes))
             else:
-                Debts.save_user_debs(user=report_to, quantity=calculate_strickes(strickes))
+                Debts.save_user_debs(user=report_to, quantity=calculate_strikes(strikes))
 
     except DailyVotesAlreadyGivenException:
         error = 'Ha agotado sus like disponibles para hoy.'

@@ -63,6 +63,7 @@
     <form action="/like" id="like-form" method="post">
         {% csrf_token %}
         <input type="hidden" id="report-to-id" name="report_to_id">
+        <input type="hidden" id="reported-by-comment" name="reported_by_comment">
         {% if error %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong>¡Error!</strong> {{ error }}
@@ -79,8 +80,9 @@
                     <thead class="thead-dark">
                     <tr>
                         <th>Name</th>
-                        <th class="text-center">Debt</th>
-                        <th class="text-center">Strikes</th>
+                        <th class="text-center">Strikes Today</th>
+                        <th class="text-center">Last Strikes</th>
+                        <th class="text-center">Debts Today</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -88,13 +90,15 @@
                     {% for u in users %}
                         <tr>
                             <td>{{ u.first_name }} {{ u.last_name }}</td>
-                            <td class="text-center">Owe {{ u.pesos }} pesos</td>
-                            <td class="text-center">{{ u.day_strickes }}</td>
+                            <td class="text-center">{{ u.day_strikes }}</td>
+                            <td class="text-center">working on it</td>
+                            <td class="text-center">Owe {{ u.day_amount }} pesos</td>
+
                             <td>
-                                {% if u != user %}
+
 
                                         <button type="button" class="btn btn-primary btn-sm like-btn"
-                                                onclick="report({{ u.id }})">Stricke
+                                                onclick="openModal({{ u.id }})">Stricke
                                             <i class="far fa-thumbs-down"></i>
                                         </button>
                                     |
@@ -106,7 +110,7 @@
                                             {#                                <i class="far fa-thumbs-down"></i>#}
                                         </button>
 
-                                {% endif %}
+
                             </td>
                         </tr>
                     {% endfor %}
@@ -132,7 +136,30 @@
         {% csrf_token %}
         <input type="hidden" id="undo-report-to-id" name="report_to_id">
     </form>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Sticke Comment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <textarea name="comment" id="comment" cols="50" rows="5"></textarea>
+        <center><span class="badge invisible text-center" id="lenght-comment-message" style="color:red;">The comment need to have more than 5 letter</span></center>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="save-modal-changes">Save changes</button>
+      </div>
+    </div>
+  </div>
 </div>
+</div>
+
 <script>
     jQuery(function() {
         //
@@ -147,13 +174,30 @@
         });
     });
 
+
     function report(report_to) {
+
         let reportToInput = $('#report-to-id');
+        let reportedByComment = $('#reported-by-comment');
+        let commet = $('#comment').val();
+        reportedByComment.val(commet);
         reportToInput.val(report_to);
         let form = $('#like-form');
         form.submit();
     }
+     function openModal(report_to) {
 
+            $('#exampleModal').modal('toggle');
+
+            $('#save-modal-changes').on('click',()=>{
+            if ($('#comment').val().length > 5){
+                report(report_to)
+                }else{
+                $('#lenght-comment-message').removeClass('invisible')
+            }
+            })
+
+        }
     function revertReport(revert_report_to) {
         // $().delete();
         // revert_report_to

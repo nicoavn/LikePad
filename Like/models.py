@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 import datetime
 import django.utils.timezone as tz
@@ -9,6 +9,11 @@ from django.db.models import Sum, Count
 from Like.Exceptions import *
 
 
+class User(AbstractUser):
+    is_admin = models.BooleanField('Admin roll', default=False)
+    is_player = models.BooleanField('Player roll', default=True)
+
+
 class Debts(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="debs")
     quantity = models.IntegerField(default=0)
@@ -17,7 +22,7 @@ class Debts(models.Model):
 
     @classmethod
     def get_user_debs(cls, user):
-        return Debts.objects.filter(user_id=user)
+        return sum(Debts.objects.filter(user_id=user, deleted_at__isnull=True).values_list('quantity', flat=True))
 
     @classmethod
     def get_day_user_debs(cls, user):
@@ -36,7 +41,7 @@ class Debts(models.Model):
         debt.save()
 
     @classmethod
-    def delete_user_debs(cls,user):
+    def delete_user_debs(cls, user):
         now = tz.datetime.now()
         Debts.objects.filter(user_id=user).update(deleted_at=now)
 
@@ -45,6 +50,7 @@ class Like(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes_given")
     reported_to = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="likes")
     when = models.DateTimeField(null=True)
+    comment = models.TextField(max_length=100, null=False, default='Last Strike comment doesn´t be found')
     deleted_at = models.DateTimeField(null=True)
 
     def __str__(self):
@@ -52,9 +58,9 @@ class Like(models.Model):
             self.reported_to.first_name[0:1] + ". " + self.reported_to.last_name
 
     @classmethod
-    def report(cls, reporter, report_to):
+    def report(cls, reporter, report_to, comment):
         now = tz.datetime.now()
-        like = Like(reported_by=reporter, reported_to=report_to, when=now)
+        like = Like(reported_by=reporter, reported_to=report_to, when=now, comment=comment)
         like.save()
 
     @classmethod

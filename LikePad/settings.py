@@ -49,8 +49,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+AUTH_USER_MODEL = 'Like.User'
 ROOT_URLCONF = 'LikePad.urls'
+
 
 TEMPLATES = [
     {
