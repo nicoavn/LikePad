@@ -4,14 +4,9 @@ import datetime
 import django.utils.timezone as tz
 
 # Create your models here.
-from django.db.models import Sum, Count
+from django.db.models import Count, Sum
 
 from Like.Exceptions import *
-
-
-class User(AbstractUser):
-    is_admin = models.BooleanField('Admin roll', default=False)
-    is_player = models.BooleanField('Player roll', default=True)
 
 
 class Debts(models.Model):
@@ -21,8 +16,12 @@ class Debts(models.Model):
     deleted_at = models.DateTimeField(null=True)
 
     @classmethod
+    def get_all_user_debs(cls):
+        return Debts.objects.filter(deleted_at__isnull=True).values_list('quantity', flat=True)
+
+    @classmethod
     def get_user_debs(cls, user):
-        return sum(Debts.objects.filter(user_id=user, deleted_at__isnull=True).values_list('quantity', flat=True))
+        return Debts.objects.filter(user_id=user, deleted_at__isnull=True).aggregate(Sum('quantity'))
 
     @classmethod
     def get_day_user_debs(cls, user):

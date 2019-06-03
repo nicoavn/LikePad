@@ -1,22 +1,18 @@
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
-
 from datetime import datetime as dt
-
-from django.urls import reverse
-
 from Like.models import Like, Debts
-from Like.Exceptions import DailyVotesAlreadyGivenException, IllegalLikeException, AlreadyLikedUserException
+from Like.Exceptions import DailyVotesAlreadyGivenException, AlreadyLikedUserException
 
 
 def login_view(request):
     try:
         if request.user.is_authenticated():
-            return  redirect(home)
+            return redirect(home)
     except:
         pass
     return render(request, "login.html",{})
@@ -47,9 +43,11 @@ def signup_api(request):
         return render(request, "signup.html", {"error": "Email no disponible"})
 
     try:
+
         user_created = User.objects.create_user(username=email,email=email,first_name=name,last_name=last_name,password=password)
+
     except:
-        return render(request, "signup.html", {"error":"Datos incorrectos"})
+        return render(request, "signup.html", {"error" : "Datos incorrectos"})
 
     if user_created:
         return render(request, "login.html", {})
@@ -83,19 +81,23 @@ def home(request, context=None):
     datetime_day_start = dt(now.year, now.month, now.day)
     datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
     day_strikes_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
-                                                         deleted_at__isnull=True).values_list('reported_to_id', flat=True)
+                                                        deleted_at__isnull=True).values_list('reported_to_id', flat = True)
     all_stricks_users = []
     daily_stricks = []
-    #last_user_report = list(Like.objects.filter(reported_to__in=list(users), deleted_at__isnull=True).values('reported_by', 'comment').annotate(when=max('when')))
+    last_user_report = list(Like.objects.filter(reported_to__in=list(users), deleted_at__isnull=True).values('reported_by', 'comment', 'reported_to'))
+
     for user in users:
         user.day_strikes = len(Like.get_day_likes(user))
         user.all_debs_amount = len(Like.get_week_likes(user))
         user.day_amount = calculate_strikes(len(Like.get_week_likes(user)))
-        user.complete_amount = Debts.get_user_debs(user)
+        debt = Debts.get_user_debs(user)['quantity__sum']
+        user.complete_amount = debt if debt is not None else 0
 
-        #if user.id in last_user_report[0]:
-        #    user.last_reporter = User.objects.filter(id=last_user_report[0]).first()
-        #    user.last_user_comment = last_user_report[1]
+        for last_report in last_user_report:
+            if user.id == last_report['reported_to']:
+                last_reporter = list(users.filter(id=last_report['reported_by']).values('first_name', 'last_name'))
+                user.last_reporter ="{} {}".format(last_reporter[0]['first_name'], last_reporter[0]['last_name'])
+                user.last_comment = last_report['comment']
 
         if user == request.user:
             continue

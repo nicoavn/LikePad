@@ -24,7 +24,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/home">English Challenger</a>
+    <a class="navbar-brand" href="/home">English Challenge</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
             aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -75,13 +75,14 @@
 
         <div class="row">
             <div class="col-md-9">
-                <h3>English Challenger</h3>
+                <h3>English Challenge</h3>
                 <table class="table table-striped">
                     <thead class="thead-dark">
                     <tr>
                         <th>Name</th>
                         <th class="text-center">Strikes Today</th>
-                        <th class="text-center">Last Strikes</th>
+                        <th class="text-center">Last Reporter</th>
+                        <th class="text-center">Last Comment</th>
                         <th class="text-center">Debts Today</th>
                         <th>Actions</th>
                     </tr>
@@ -91,8 +92,9 @@
                         <tr>
                             <td>{{ u.first_name }} {{ u.last_name }}</td>
                             <td class="text-center">{{ u.day_strikes }}</td>
-                            <td class="text-center">working on it</td>
-                            <td class="text-center">Owe {{ u.day_amount }} pesos</td>
+                            <td class="text-center">{{ u.last_reporter }}</td>
+                            <td class="text-center" title="{{ u.last_comment }}">{{ u.last_comment|truncatechars:12 }}</td>
+                            <td class="text-center">Owe {{ u.day_amount }} pesos </td>
 
                             <td>
 
@@ -101,7 +103,7 @@
                                                 onclick="openModal({{ u.id }})">Stricke
                                             <i class="far fa-thumbs-down"></i>
                                         </button>
-                                    |
+                                {% if user.is_superuser %}|
                                     <button type="button" class="btn btn-danger btn-sm dislike-btn "
                                                 onclick="revertReport({{ u.id }})">
                                         <i class="far fa-money-bill-alt"></i>
@@ -109,7 +111,7 @@
                                          <i class="far fa-thumbs-up"></i>
                                             {#                                <i class="far fa-thumbs-down"></i>#}
                                         </button>
-
+                                {% endif %}
 
                             </td>
                         </tr>
@@ -123,10 +125,16 @@
                     <thead class="thead-dark">
                     <tr>
                         <th>Name</th>
-                        <th>Strikes</th>
+                        <th>Debts</th>
                     </tr>
                     </thead>
                     <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td>{{ u.first_name }} {{ u.last_name }}</td>
+                            <td>{{ u.complete_amount }}</td>
+                        </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -161,7 +169,7 @@
 </div>
 
 <script>
-    jQuery(function() {
+    /*jQuery(function() {
         //
         $('#winners-table > tbody:last-child').append('<tr>Joselo</tr>');
 
@@ -174,7 +182,7 @@
         });
     });
 
-
+*/
     function report(report_to) {
 
         let reportToInput = $('#report-to-id');
