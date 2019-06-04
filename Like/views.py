@@ -77,14 +77,8 @@ def calculate_strikes(stricks):
 def home(request, context=None):
     users = User.objects.all()
     message = request.GET.get("message", '')
-    now = dt.now()
-    datetime_day_start = dt(now.year, now.month, now.day)
-    datetime_day_end = dt(now.year, now.month, now.day, 23, 59, 59)
-    day_strikes_users = request.user.likes_given.filter(when__range=(datetime_day_start, datetime_day_end),
-                                                        deleted_at__isnull=True).values_list('reported_to_id', flat = True)
     all_stricks_users = []
-    daily_stricks = []
-    last_user_report = list(Like.objects.filter(reported_to__in=list(users), deleted_at__isnull=True).values('reported_by', 'comment', 'reported_to'))
+    last_user_report = Like.get_last_strike(users)
 
     for user in users:
         user.day_strikes = len(Like.get_day_likes(user))
@@ -101,13 +95,9 @@ def home(request, context=None):
         if user == request.user:
             continue
 
-        if user.id in day_strikes_users:
-            daily_stricks.append(user.id)
-
     if not context:
         context = {}
     context['users'] = users
-    context['daily_stricks'] = daily_stricks
     context['week_likes'] = all_stricks_users
     context['error'] = message if message else ''
 

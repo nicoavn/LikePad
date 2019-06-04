@@ -2,9 +2,8 @@ from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 import datetime
 import django.utils.timezone as tz
-
 # Create your models here.
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Max
 
 from Like.Exceptions import *
 
@@ -74,6 +73,10 @@ class Like(models.Model):
         datetime_day_end = tz.datetime(now.year, now.month, now.day, 23, 59, 59)
         day_likes = Like.objects.filter(when__range=(datetime_day_start, datetime_day_end), deleted_at__isnull=True)
         return day_likes.filter(reported_to=user)
+
+    @classmethod
+    def get_last_strike(cls, users_list):
+        return list(Like.objects.filter(reported_to__in=list(users_list), deleted_at__isnull=True).values('reported_to', 'reported_by', 'comment'))
 
     @classmethod
     def get_week_likes(cls, user):
