@@ -88,8 +88,7 @@ def home(request, context=None):
 
     for user in users:
         user.day_strikes = len(Like.get_day_likes(user))
-        user.all_debs_amount = len(Like.get_week_likes(user))
-        user.day_amount = calculate_strikes(len(Like.get_week_likes(user)))
+        user.day_amount = calculate_strikes(len(Like.get_day_likes(user)))
         debt = Debts.get_user_debs(user)['quantity__sum']
         user.complete_amount = debt if debt is not None else 0
 
