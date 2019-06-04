@@ -99,12 +99,12 @@
                             <td>
 
 
-                                        <button type="button" class="btn btn-primary btn-sm like-btn"
-                                                onclick="openModal({{ u.id }})">Stricke
+                                        <button type="button" class="btn btn-danger btn-sm like-btn"
+                                                onclick="openModal({{ u.id }})">Strike
                                             <i class="far fa-thumbs-down"></i>
                                         </button>
                                 {% if user.is_superuser %}|
-                                    <button type="button" class="btn btn-danger btn-sm dislike-btn "
+                                    <button type="button" class="btn btn-primary btn-sm dislike-btn "
                                                 onclick="revertReport({{ u.id }})">
                                         <i class="far fa-money-bill-alt"></i>
                                         Pay
@@ -120,7 +120,7 @@
                 </table>
             </div>
             <div class="col-md-3">
-                <h3>Week Winners</h3>
+                <h3>Total debs</h3>
                 <table id="winners-table" class="table table-striped">
                     <thead class="thead-dark">
                     <tr>

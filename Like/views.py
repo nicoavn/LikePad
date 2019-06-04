@@ -61,10 +61,10 @@ def log_out(request):
     return redirect(home)
 
 
-def calculate_strikes(stricks):
+def calculate_strikes(striks):
     n = 0
     amount = 0
-    for strick in range(stricks):
+    for strik in range(striks):
         n = n+1
         if n == 5:
             amount = amount + 50
@@ -77,7 +77,6 @@ def calculate_strikes(stricks):
 def home(request, context=None):
     users = User.objects.all()
     message = request.GET.get("message", '')
-    all_stricks_users = []
     last_user_report = Like.get_last_strike(users)
 
     for user in users:
@@ -98,7 +97,6 @@ def home(request, context=None):
     if not context:
         context = {}
     context['users'] = users
-    context['week_likes'] = all_stricks_users
     context['error'] = message if message else ''
 
     return render(request, "dashboard.html", context)
